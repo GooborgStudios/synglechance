@@ -48,9 +48,7 @@ int server_thread(void *data)
 	}
 	CloseHandle(pipe);
 #else
-	if (FILE *file = fopen(PIPE_PATH, "r")) {
-		fclose(file);
-		out_pipe = open(PIPE_PATH, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (out_pipe = open(PIPE_PATH, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) {
 		SDL_LockMutex(mutex);
 		active = true;
 		if (message_len > 0)
@@ -141,7 +139,7 @@ void journalBindingInit()
 	mutex = SDL_CreateMutex();
 	memset((char*)lang_buffer, 0, BUFFER_SIZE);
 	lang_buffer[0] = '_';
-#if defined __linux
+#ifdef LINUX
 	mkfifo(PIPE_PATH, 0666);
 	atexit(cleanup_pipe);
 #endif

@@ -28,23 +28,27 @@ class WatchPipe(QThread):
 	def run(self):
 		while True:
 			while not os.path.exists(pipe_path): time.sleep(0.1)
-
-			pipe = open(pipe_path, 'r')
-			pipe.flush()
+			pipe = os.open(pipe_path, os.O_RDONLY | os.O_NONBLOCK)
 
 			was_nonzero = False
 
 			while os.path.exists(pipe_path): # Make sure the file still exists and wasn't cleaned up by SyngleChance
-				message = os.read(pipe.fileno(), 256)
+				try:
+					message = os.read(pipe, 256)
+				except:
+					time.sleep(0.05)
+					continue
 				if len(message) > 0:
 					was_nonzero = True
 					self.change_image.emit(message.decode())
 				else:
-					st = os.stat(pipe_path)
-					if st.st_size == 0 and was_nonzero:
+					try:
+						st = os.stat(pipe_path)
+						if st.st_size == 0 and was_nonzero:
+							self.change_image.emit("CLOSE")
+					except:
 						self.change_image.emit("CLOSE")
-
-					time.sleep(0.05)
+				time.sleep(0.05)
 
 class AnimationTimer(QThread):
 	next_frame = pyqtSignal()
@@ -198,13 +202,5 @@ if __name__ == '__main__':
 			thread.change_image.connect(journal.change_image)
 			thread.start()
 
-	pipe_file = open(pipe_path, "w+")
-	pipe_file.close()
-
 	app.exec_()
 
-	try:
-		os.remove(pipe_path)
-	except:
-		# Most likely due to the file being in use.  Ignore.
-		pass
