@@ -2,7 +2,7 @@
 
 TEMPLATE = app
 QT =
-TARGET = OneShot
+TARGET = oneshot
 DEPENDPATH += src shader assets
 INCLUDEPATH += . src
 
@@ -51,6 +51,8 @@ unix {
 		PKGCONFIG += gtk+-3.0 gdk-3.0 libxfconf-0
 		INCLUDEPATH += /usr/include/AL /usr/local/include/AL
 		LIBS += -lX11
+		QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
+		QMAKE_LFLAGS += -no-pie
 	}
 }
 
@@ -245,6 +247,7 @@ BINDING_NULL {
 }
 
 BINDING_MRI {
+	MRIVERSION = $$(MRIVERSION)
 	isEmpty(MRIVERSION) {
 		MRIVERSION = 2.3
 	}
