@@ -270,8 +270,7 @@ BINDING_MRI {
 	binding-mri/disposable-binding.h \
 	binding-mri/sceneelement-binding.h \
 	binding-mri/viewportelement-binding.h \
-	binding-mri/flashable-binding.h \
-	binding-mri/journal-binding.h
+	binding-mri/flashable-binding.h
 
 	SOURCES += \
 	binding-mri/binding-mri.cpp \
