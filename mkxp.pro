@@ -47,7 +47,9 @@ unix {
 		SOURCES += src/mac-desktop.mm
 	}
 	!macx: {
-		QMAKE_CXXFLAGS += -g
+		CONFIG(debug, debug|release) {
+			QMAKE_CXXFLAGS += -g
+		}
 		PKGCONFIG += gtk+-3.0 gdk-3.0 libxfconf-0
 		INCLUDEPATH += /usr/include/AL /usr/local/include/AL
 		LIBS += -lX11
