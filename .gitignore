@@ -12,6 +12,7 @@
 *.filters
 *.sln
 *.user
+\.vs
 
 bin/
 lib/
