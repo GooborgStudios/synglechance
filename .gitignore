@@ -13,6 +13,7 @@
 *.sln
 *.user
 \.vs
+\.vscode
 
 bin/
 lib/
