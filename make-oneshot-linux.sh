@@ -21,7 +21,7 @@ echo -e "${white}Compiling ${bold}SyngleChance v${linux_version} ${white}engine 
 
 # Generate makefile.
 echo -e "-> ${cyan}Generate makefile...${color_reset}"
-export MRIVERSION=$(echo "puts RUBY_VERSION.split('.').slice(0, 2).join('.')" | ruby)
+export MRIVERSION=2.3
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 qmake mkxp.pro > oneshot.qmake.out
 
@@ -60,6 +60,7 @@ mkdir libs
 ldd oneshot | ruby libraries.rb
 ldd steamshim_parent/build/steamshim | ruby libraries.rb
 yes | cp libs/* "$ONESHOT_PATH"
+rm "$ONESHOT_PATH/libgio-2.0.so.0"
 
 # Cleanup.
 echo -e "-> ${cyan}Cleanup files...${color_reset}"
