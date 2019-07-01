@@ -330,7 +330,7 @@ end:
 			boost::replace_all(concatPath, "\\", "\\\\");
 			boost::replace_all(concatPath, "\"", "\\\"");
 			boost::replace_all(concatPath, "'", "\\x27");
-			command << "qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'string:" <<
+			command << "dbus-send --session --dest=org.kde.plasmashell --type=method_call /PlasmaShell org.kde.PlasmaShell.evaluateScript 'string:" <<
 				"var allDesktops = desktops();" <<
 				"for (var i = 0, l = allDesktops.length; i < l; ++i) {" <<
 					"var d = allDesktops[i];" <<
@@ -426,7 +426,7 @@ RB_METHOD(wallpaperReset)
 			}
 		} else if (desktop == "kde") {
 			std::stringstream command;
-			command << "qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'string:" <<
+			command << "dbus-send --session --dest=org.kde.plasmashell --type=method_call /PlasmaShell org.kde.PlasmaShell.evaluateScript 'string:" <<
 					"var allDesktops = desktops();" <<
 					"var data = {";
 			// Plugin, picture, color, mode, blur
