@@ -8,10 +8,13 @@ from PyQt5.QtGui import QIcon, QPixmap, QPainter
 
 def get_documents_path():
 	if sys.platform == 'win32':
-		import ctypes.wintypes
+		import ctypes, ctypes.wintypes
 		buff = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-		ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
-		return os.path.join(buf.value, 'My Games')
+		ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buff)
+		return os.path.join(buff.value, 'My Games')
+	elif sys.platform == 'linux':
+		from gi.repository import GLib
+		return GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOCUMENTS)
 	else:
 		return os.path.expanduser('~/Documents')
 
@@ -80,13 +83,22 @@ class AnimationTimer(PipeThread):
 				message = os.read(pipe.fileno(), 256)
 				if len(message) > 0:
 					m = message.decode()
-					if not ',' in m: pass
-					x, y = m.split(',')
-					self.start_animation.emit(int(x), int(y))
+					spl = m.split(',')
+					if len(spl) == 0:
+						pass
+					else:
+						try:
+							x = int(spl[0])
+							y = int(spl[1])
+							if len(spl) > 2:
+								print('Journal received a possibly invalid message: %s' % m)
+							self.start_animation.emit(x, y)
 
-					while True:
-						self.next_frame.emit()
-						time.sleep(1.0 / 60)
+							while True:
+								self.next_frame.emit()
+								time.sleep(1.0 / 60)
+						except ValueError:
+							print('Journal received an invalid message: %s' % m)
 					
 				time.sleep(0.05)
 
@@ -124,17 +136,27 @@ class Journal(QWidget):
 	def mousePressEvent(self, event):
 		self.mousedown = True
 		self.mousedownpos = event.pos()
+		# self.prevx = -999
+		# self.prevy = -999
+		# print('Mouse down: ({0}, {1})'.format(self.mousedownpos.x(), self.mousedownpos.y()))
 
 		if self.close_button and (((left_close and self.mousedownpos.x() <= 24) or (not left_close and self.mousedownpos.x() >= 776)) and self.mousedownpos.y() < 24):
 			self.app.quit()
 
 	def mouseReleaseEvent(self, event):
+		# print('Mouse release')
 		self.mousedown = False
 
 	def mouseMoveEvent(self, event):
 		if event.buttons() == Qt.LeftButton:
 			pos = event.pos()
 			frameGm = self.frameGeometry()
+			# prevx, prevy = frameGm.x() + pos.x() - self.mousedownpos.x(), frameGm.y() + pos.y() - self.mousedownpos.y()
+			# if prevx != self.prevx and prevy != self.prevy:
+			# 	print('Mouse move: ({0}, {1})'.format(prevx, prevy))
+			# 	print('Previous: geo({0}, {1}), pos({0}, {1}), mdp({0}, {1})'.format(frameGm.x(), frameGm.y(), pos.x(), pos.y(), self.mousedownpos.x(), self.mousedownpos.y()))
+			# 	self.prevx = prevx
+			# 	self.prevy = prevy
 			self.setGeometry(frameGm.x() + pos.x() - self.mousedownpos.x(), frameGm.y() + pos.y() - self.mousedownpos.y(), 800, 600)
 
 	def change_image(self, image):
