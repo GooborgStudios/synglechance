@@ -11,6 +11,10 @@ CONFIG += link_pkgconfig
 
 CONFIG(release, debug|release): DEFINES += NDEBUG STEAM
 
+CONFIG += c++11
+# And for older qmake versions..
+QMAKE_CXXFLAGS += -std=c++11
+
 isEmpty(BINDING) {
 	BINDING = MRI
 }
