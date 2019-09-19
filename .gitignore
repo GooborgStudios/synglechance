@@ -12,6 +12,8 @@
 *.filters
 *.sln
 *.user
+\.vs
+\.vscode
 
 bin/
 lib/
@@ -29,6 +31,7 @@ __pycache__
 /debug
 /release
 steamshim_parent/build/
+*.out
 
 object_script.*
 rpgscript.bat
@@ -41,7 +44,6 @@ oneshot_JA_2_ver3_checked.pot
 oneshot_JA_Mariko1_WIP.pot
 *.pot
 xScripts.rxdata
-OneShot
 
 .qmake.stash
 CMakeCache.txt
@@ -52,6 +54,10 @@ conaninfo\.txt
 conanbuildinfo\.txt
 conan_imports_manifest\.txt
 package/
+.xcode/
+oneshot.xcodeproj/
+Info.plist
+JournalInfo.plist
 
 oclint/
 

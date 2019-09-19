@@ -383,14 +383,22 @@ class Window_Message < Window_Selectable
         @text_pause -= 1
       else
         if @blip >= BLIP_TIME
-          Audio.se_play("Audio/SE/#{@blipsound}.wav", 50) unless @text.empty?
+		  #april fools
+		  t = Time.now
+	      if $game_temp.message_face != nil && t.month == 4 && t.day == 1 && $game_temp.message_face.start_with?("niko")
+		    niko_sounds = [ "cat_2"]
+			@blipsound = niko_sounds[rand(niko_sounds.length)]
+            Audio.se_play("Audio/SE/#{@blipsound}.wav", 50, rand(100..125)) unless @text.empty?
+	      else
+            Audio.se_play("Audio/SE/#{@blipsound}.wav", 50) unless @text.empty?
+		  end
           @blip = 0
         else
           @blip += 1
         end
         tick
       end
-      if Input.trigger?(Input::ACTION) || Input.trigger?(Input::CANCEL)
+      if Input.trigger?(Input::ACTION) || Input.trigger?(Input::CANCEL) || (Input.press?(Input::R) && $game_switches[253])
         @skip_text = true
       end
     else
@@ -426,7 +434,7 @@ class Window_Message < Window_Selectable
         self.pause = true
 
         # Advance/Close message
-        if Input.trigger?(Input::ACTION) || Input.trigger?(Input::CANCEL)
+        if Input.trigger?(Input::ACTION) || Input.trigger?(Input::CANCEL) || (Input.press?(Input::R) && $game_switches[253])
           if @text.length <= 0
             terminate_message
           else

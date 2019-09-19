@@ -312,15 +312,28 @@ struct FileSystemPrivate
 	bool havePathCache;
 };
 
-FileSystem::FileSystem(const char *argv0,
-                       bool allowSymlinks)
+static void throwPhysfsError(const char *desc)
 {
+	PHYSFS_ErrorCode ec = PHYSFS_getLastErrorCode();
+	const char *englishStr = PHYSFS_getErrorByCode(ec);
+
+	throw Exception(Exception::PHYSFSError, "%s: %s", desc, englishStr);
+}
+
+FileSystem::FileSystem(bool allowSymlinks)
+{
+
+	/* One error (=return 0) turns the whole product to 0 */
+	int er = 1;
+	er *= PHYSFS_registerArchiver(&RGSS1_Archiver);
+	er *= PHYSFS_registerArchiver(&RGSS2_Archiver);
+	er *= PHYSFS_registerArchiver(&RGSS3_Archiver);
+
+	if (er == 0)
+		throwPhysfsError("Error registering PhysFS RGSS archiver");
+
 	p = new FileSystemPrivate;
 	p->havePathCache = false;
-
-	PHYSFS_registerArchiver(&RGSS1_Archiver);
-	PHYSFS_registerArchiver(&RGSS2_Archiver);
-	PHYSFS_registerArchiver(&RGSS3_Archiver);
 
 	if (allowSymlinks)
 		PHYSFS_permitSymbolicLinks(1);

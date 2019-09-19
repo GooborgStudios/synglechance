@@ -6,68 +6,99 @@ from PyQt5.QtCore import Qt, QEvent, QThread, pyqtSignal, QRect, QRectF, QTimer,
 from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget, QLabel
 from PyQt5.QtGui import QIcon, QPixmap, QPainter
 
-if sys.platform == "win32":
-	pipe_path = '\\\\.\\pipe\\oneshot-journal-to-game'
-	import ctypes.wintypes
-	buff = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-	ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
-	documents_path = os.path.join(buf.value, 'My Games')
-else:
-	pipe_path = '/tmp/oneshot-pipe'
-	documents_path = os.path.expanduser('~/Documents')
+def get_documents_path():
+	if sys.platform == 'win32':
+		import ctypes, ctypes.wintypes
+		buff = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+		ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buff)
+		return os.path.join(buff.value, 'My Games')
+	elif sys.platform == 'linux':
+		from gi.repository import GLib
+		return GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOCUMENTS)
+	else:
+		return os.path.expanduser('~/Documents')
+
+def get_pipe_path(mode='journal'):
+	if sys.platform == 'win32':
+		return '\\\\.\\pipe\\oneshot-journal-to-game'
+	else:
+		if mode == 'niko':
+			return os.path.expanduser('~/.oneshot-niko-pipe')
+		return os.path.expanduser('~/.oneshot-pipe')
 
 left_close = False
-if sys.platform == "darwin": left_close = True
+if sys.platform == 'darwin': left_close = True
 
 try: base_path = sys._MEIPASS
 except AttributeError: base_path = os.path.abspath('.')
 
-class WatchPipe(QThread):
+class PipeThread(QThread):
+	def __init__(self, *args, **kwargs):
+		self.pipe = kwargs['pipe']
+		del kwargs['pipe']
+		super().__init__(*args, **kwargs)
+
+class WatchPipe(PipeThread):
 	change_image = pyqtSignal(str)
 
 	def run(self):
 		while True:
-			while not os.path.exists(pipe_path): time.sleep(0.1)
+			self.change_image.emit('default_en')
+			while not os.path.exists(self.pipe): time.sleep(0.1)
 
-			pipe = open(pipe_path, 'r')
+			pipe = open(self.pipe, 'r')
 			pipe.flush()
 
-			was_nonzero = False
+			was_nondefault = False
 
-			while os.path.exists(pipe_path): # Make sure the file still exists and wasn't cleaned up by SyngleChance
+			while os.path.exists(self.pipe): # Make sure the file still exists and wasn't cleaned up by SyngleChance
 				message = os.read(pipe.fileno(), 256)
 				if len(message) > 0:
-					was_nonzero = True
-					self.change_image.emit(message.decode())
+					m = message.decode()
+					if m != 'default_en':
+						was_nondefault = True
+					self.change_image.emit(m)
 				else:
-					st = os.stat(pipe_path)
-					if st.st_size == 0 and was_nonzero:
-						self.change_image.emit("CLOSE")
+					try:
+						st = os.stat(self.pipe)
+						if st.st_size == 0 and was_nondefault:
+							self.change_image.emit('CLOSE')
+					except FileNotFoundError:
+						pass
 
 					time.sleep(0.05)
 
-class AnimationTimer(QThread):
+class AnimationTimer(PipeThread):
 	next_frame = pyqtSignal()
 	start_animation = pyqtSignal(int, int)
 
 	def run(self):
 		while True:
-			while not os.path.exists(pipe_path): time.sleep(0.1)
+			while not os.path.exists(self.pipe): time.sleep(0.1)
 
-			pipe = open(pipe_path, 'r')
+			pipe = open(self.pipe, 'r')
 			pipe.flush()
 
-			while os.path.exists(pipe_path): # Make sure the file still exists and wasn't cleaned up by SyngleChance
+			while os.path.exists(self.pipe): # Make sure the file still exists and wasn't cleaned up by SyngleChance
 				message = os.read(pipe.fileno(), 256)
 				if len(message) > 0:
 					m = message.decode()
-					if not "," in m: pass
-					x, y = m.split(",")
-					self.start_animation.emit(int(x), int(y))
+					spl = m.split(',')
+					if len(spl) == 0:
+						pass
+					else:
+						try:
+							x = int(spl[0])
+							y = int(spl[1])
+							if len(spl) > 2:
+								print('Journal received a possibly invalid message: %s' % m)
+							self.start_animation.emit(x, y)
 
-					while True:
-						self.next_frame.emit()
-						time.sleep(1.0 / 60)
+							while True:
+								self.next_frame.emit()
+								time.sleep(1.0 / 60)
+						except ValueError:
+							print('Journal received an invalid message: %s' % m)
 					
 				time.sleep(0.05)
 
@@ -82,7 +113,6 @@ class Journal(QWidget):
 		self.mousedownpos = QPoint(0, 0)
 
 		self.label = QLabel(self)
-		self.change_image('default_en')
 
 		self.close_label = QLabel(self)
 		self.close_label.setPixmap(QPixmap(os.path.join(base_path, 'images', 'close.png')))
@@ -90,7 +120,9 @@ class Journal(QWidget):
 
 		self.close_button = True
 
-		if "linux" in sys.platform: self.setWindowFlags(Qt.FramelessWindowHint)
+		self.change_image('default_en')
+
+		if 'linux' in sys.platform: self.setWindowFlags(Qt.FramelessWindowHint)
 		else: self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground)
 		self.setMouseTracking(True)
@@ -104,35 +136,48 @@ class Journal(QWidget):
 	def mousePressEvent(self, event):
 		self.mousedown = True
 		self.mousedownpos = event.pos()
+		# self.prevx = -999
+		# self.prevy = -999
+		# print('Mouse down: ({0}, {1})'.format(self.mousedownpos.x(), self.mousedownpos.y()))
 
 		if self.close_button and (((left_close and self.mousedownpos.x() <= 24) or (not left_close and self.mousedownpos.x() >= 776)) and self.mousedownpos.y() < 24):
 			self.app.quit()
 
 	def mouseReleaseEvent(self, event):
+		# print('Mouse release')
 		self.mousedown = False
 
 	def mouseMoveEvent(self, event):
 		if event.buttons() == Qt.LeftButton:
 			pos = event.pos()
 			frameGm = self.frameGeometry()
+			# prevx, prevy = frameGm.x() + pos.x() - self.mousedownpos.x(), frameGm.y() + pos.y() - self.mousedownpos.y()
+			# if prevx != self.prevx and prevy != self.prevy:
+			# 	print('Mouse move: ({0}, {1})'.format(prevx, prevy))
+			# 	print('Previous: geo({0}, {1}), pos({0}, {1}), mdp({0}, {1})'.format(frameGm.x(), frameGm.y(), pos.x(), pos.y(), self.mousedownpos.x(), self.mousedownpos.y()))
+			# 	self.prevx = prevx
+			# 	self.prevy = prevy
 			self.setGeometry(frameGm.x() + pos.x() - self.mousedownpos.x(), frameGm.y() + pos.y() - self.mousedownpos.y(), 800, 600)
 
 	def change_image(self, image):
-		if image == "CLOSE":
+		if image == 'CLOSE':
 			self.app.quit()
 			return
-		if not "_" in image: return
+		if not '_' in image: return
 
 		name, lang = image.split('_', 1)
 
-		if name != "default":
+		if name == 'default' or name == 'save' or name == 'final':
+			self.close_label.show()
+			self.close_button = True
+		else:
 			self.close_label.hide()
 			self.close_button = False
 
 		if lang == 'en': img = os.path.join(base_path, 'images', '{}.png'.format(name))
 		else: img = os.path.join(base_path, 'images', lang.upper(), '{}.png'.format(name))
 		if not os.path.exists(img): return
-		
+
 		self.pixmap = QPixmap(img)
 		self.label.setPixmap(self.pixmap)
 
@@ -179,9 +224,11 @@ class Niko(QWidget):
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
 
-	if len(sys.argv) == 2 and sys.argv[1] == "niko":
-		# "Niko-leaves-the-screen" mode
-		thread = AnimationTimer()
+	pipe_path = get_pipe_path()
+	if len(sys.argv) == 2 and sys.argv[1] == 'niko':
+		# "Niko-leaves-the-screen" mode.
+		pipe_path = get_pipe_path('niko')
+		thread = AnimationTimer(pipe = pipe_path)
 
 		niko = Niko(screen_height = app.primaryScreen().size().height(), app = app, thread = thread)
 
@@ -190,9 +237,9 @@ if __name__ == '__main__':
 		thread.start()
 
 	else:
-		# Author's Journal mode
+		# Author's Journal mode.
 		journal = Journal(app = app)
-		save_path = os.path.join(documents_path, 'Oneshot', 'save_progress.oneshot')
+		save_path = os.path.join(get_documents_path(), 'Oneshot', 'save_progress.oneshot')
 		if os.path.exists(save_path):
 			with open(save_path, 'rb') as save:
 				save.seek(-8, os.SEEK_END)
@@ -200,18 +247,18 @@ if __name__ == '__main__':
 				lang = lang[lang.find('[') + 1:lang.find(']')]
 				if lang == 'en_US': lang = 'en'
 				journal.change_image('save_' + lang)
-		else:
-			thread = WatchPipe()
-			thread.change_image.connect(journal.change_image)
-			thread.start()
+		thread = WatchPipe(pipe = pipe_path)
+		thread.change_image.connect(journal.change_image)
+		thread.start()
 
-	pipe_file = open(pipe_path, "w+")
-	pipe_file.close()
+	if not os.path.exists(pipe_path):
+		pipe_file = open(pipe_path, 'w+')
+		pipe_file.close()
 
 	app.exec_()
 
 	try:
 		os.remove(pipe_path)
 	except:
-		# Most likely due to the file being in use.  Ignore.
+		# Most likely due to the file being in use, ignore.
 		pass

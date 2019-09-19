@@ -15,7 +15,7 @@ rm -rf *.vcxproj.filters
 rm -rf *.user
 rm -rf _______.app
 rm -rf OneShot.app
-rm -rf OneShot
+rm -rf oneshot
 rm -rf conanbuildinfo.cmake
 rm -rf CMakeFiles
 rm -rf cmake_install.cmake
@@ -25,7 +25,12 @@ rm -rf conaninfo.txt
 rm -rf conan_imports_manifest.txt
 rm -rf *.xxd
 rm -rf *.dir
-if [ -f .qmake.stash ]
+rm -rf *.o
+rm -rf oneshot.xcodeproj
+rm -rf Release/
+rm -rf Debug/
+rm -rf .xcode
+if [ -f Makefile ]
 then
 	make distclean
 else 
