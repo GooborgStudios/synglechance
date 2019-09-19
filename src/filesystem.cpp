@@ -320,11 +320,8 @@ static void throwPhysfsError(const char *desc)
 	throw Exception(Exception::PHYSFSError, "%s: %s", desc, englishStr);
 }
 
-FileSystem::FileSystem(const char *argv0,
-                       bool allowSymlinks)
+FileSystem::FileSystem(bool allowSymlinks)
 {
-	if (PHYSFS_init(argv0) == 0)
-		throwPhysfsError("Error initializing PhysFS");
 
 	/* One error (=return 0) turns the whole product to 0 */
 	int er = 1;
