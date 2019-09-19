@@ -57,6 +57,7 @@ package/
 .xcode/
 oneshot.xcodeproj/
 Info.plist
+JournalInfo.plist
 
 oclint/
 

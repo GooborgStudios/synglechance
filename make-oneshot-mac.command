@@ -18,6 +18,13 @@ use_qmake=True
 
 echo "${white}Compiling ${bold}SyngleChance v${mac_version} ${white}engine for macOS...${color_reset}\n"
 
+# Set version number
+echo "-> ${cyan}Set version number...${color_reset}"
+rm -f OneShot.app/Contents/Info.plist
+rm -f _______.app/Contents/Info.plist
+m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > Info.plist
+m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > JournalInfo.plist
+
 # Generate makefile and build main + journal
 if [[ $use_qmake == True ]]
 	then
@@ -67,13 +74,10 @@ cp steam_appid.txt ./OneShot.app/Contents/Resources/steam_appid.txt
 cp patches/mac/oneshot.sh ./OneShot.app/Contents/MacOS/oneshot.sh
 mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
 cp -r dist/_______.app _______.app
-
-# Set version number
-echo "-> ${cyan}Set version number...${color_reset}"
-rm -f OneShot.app/Contents/Info.plist
-rm -f _______.app/Contents/Info.plist
-m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > OneShot.app/Contents/Info.plist
-m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > _______.app/Contents/Info.plist
+rm -f ./OneShot.app/Contents/Info.plist
+rm -f ./_______.app/Contents/Info.plist
+cp Info.plist ./OneShot.app/Contents/Info.plist
+cp JournalInfo.plist ./_______.app/Contents/Info.plist
 
 # Compile scripts
 echo "-> ${cyan}Compile xScripts.rxdata...${color_reset}"
