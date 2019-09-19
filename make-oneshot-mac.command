@@ -22,9 +22,9 @@ echo "${white}Compiling ${bold}SyngleChance v${mac_version} ${white}engine for m
 if [[ $use_qmake == True ]]
 	then
 	echo "-> ${cyan}Generate makefile...${color_reset}"
-	qmake MRIVERSION=2.5
+	qmake MRIVERSION=2.5 -spec macx-xcode
 	echo "-> ${cyan}Compile engine...${color_reset}"
-	make -j${make_threads}
+	xcodebuild
 	echo "-> ${cyan}Compile steamshim...${color_reset}"
 	# cd steamshim_parent
 	# mkdir build && cd build
@@ -39,7 +39,7 @@ pyinstaller journal/unix/journal.spec --onefile --windowed
 
 # Create app bundles
 echo "-> ${cyan}Create app bundles...${color_reset}"
-OSX_App="OneShot.app"
+OSX_App="./Release/oneshot.app"
 ContentsDir="$OSX_App/Contents"
 LibrariesDir="$OSX_App/Contents/Libraries"
 ResourcesDir="$OSX_App/Contents/Resources"
@@ -54,6 +54,8 @@ if [ ! -e $ResourcesDir ]
 	then
 	mkdir -p "$ResourcesDir"
 fi
+
+mv ./Release/oneshot.app ./OneShot.app
 
 cp steamshim_parent/steamshim ./OneShot.app/Contents/Resources/steamshim
 # cp patches/mac/libsteam_api.dylib ./OneShot.app/Contents/Libraries/libsteam_api.dylib
