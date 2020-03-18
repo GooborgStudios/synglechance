@@ -18,13 +18,20 @@ use_qmake=True
 
 echo "${white}Compiling ${bold}SyngleChance v${mac_version} ${white}engine for macOS...${color_reset}\n"
 
+# Set version number
+echo "-> ${cyan}Set version number...${color_reset}"
+rm -f OneShot.app/Contents/Info.plist
+rm -f _______.app/Contents/Info.plist
+m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > Info.plist
+m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > JournalInfo.plist
+
 # Generate makefile and build main + journal
 if [[ $use_qmake == True ]]
 	then
 	echo "-> ${cyan}Generate makefile...${color_reset}"
-	qmake MRIVERSION=2.5
+	qmake MRIVERSION=2.5 -spec macx-xcode
 	echo "-> ${cyan}Compile engine...${color_reset}"
-	make -j${make_threads}
+	xcodebuild
 	echo "-> ${cyan}Compile steamshim...${color_reset}"
 	# cd steamshim_parent
 	# mkdir build && cd build
@@ -39,7 +46,7 @@ pyinstaller journal/unix/journal.spec --onefile --windowed
 
 # Create app bundles
 echo "-> ${cyan}Create app bundles...${color_reset}"
-OSX_App="OneShot.app"
+OSX_App="./Release/oneshot.app"
 ContentsDir="$OSX_App/Contents"
 LibrariesDir="$OSX_App/Contents/Libraries"
 ResourcesDir="$OSX_App/Contents/Resources"
@@ -55,6 +62,8 @@ if [ ! -e $ResourcesDir ]
 	mkdir -p "$ResourcesDir"
 fi
 
+mv ./Release/oneshot.app ./OneShot.app
+
 cp steamshim_parent/steamshim ./OneShot.app/Contents/Resources/steamshim
 # cp patches/mac/libsteam_api.dylib ./OneShot.app/Contents/Libraries/libsteam_api.dylib
 cp -f journal/unix/macOS/Python dist/_______.app/Contents/MacOS/Python
@@ -65,13 +74,10 @@ cp steam_appid.txt ./OneShot.app/Contents/Resources/steam_appid.txt
 cp patches/mac/oneshot.sh ./OneShot.app/Contents/MacOS/oneshot.sh
 mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
 cp -r dist/_______.app _______.app
-
-# Set version number
-echo "-> ${cyan}Set version number...${color_reset}"
-rm -f OneShot.app/Contents/Info.plist
-rm -f _______.app/Contents/Info.plist
-m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > OneShot.app/Contents/Info.plist
-m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > _______.app/Contents/Info.plist
+rm -f ./OneShot.app/Contents/Info.plist
+rm -f ./_______.app/Contents/Info.plist
+cp Info.plist ./OneShot.app/Contents/Info.plist
+cp JournalInfo.plist ./_______.app/Contents/Info.plist
 
 # Compile scripts
 echo "-> ${cyan}Compile xScripts.rxdata...${color_reset}"

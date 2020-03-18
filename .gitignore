@@ -54,6 +54,10 @@ conaninfo\.txt
 conanbuildinfo\.txt
 conan_imports_manifest\.txt
 package/
+.xcode/
+oneshot.xcodeproj/
+Info.plist
+JournalInfo.plist
 
 oclint/
 

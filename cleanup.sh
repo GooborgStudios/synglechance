@@ -25,7 +25,12 @@ rm -rf conaninfo.txt
 rm -rf conan_imports_manifest.txt
 rm -rf *.xxd
 rm -rf *.dir
-if [ -f .qmake.stash ]
+rm -rf *.o
+rm -rf oneshot.xcodeproj
+rm -rf Release/
+rm -rf Debug/
+rm -rf .xcode
+if [ -f Makefile ]
 then
 	make distclean
 else 
