@@ -509,7 +509,7 @@ bool Oneshot::msgbox(int type, const char *body, const char *title)
 
 	// Messagebox data
 	SDL_MessageBoxData data;
-	data.window = NULL; //p->window;
+	data.window = p->window;
 	data.colorScheme = 0;
 	data.title = title;
 	data.message = body;
