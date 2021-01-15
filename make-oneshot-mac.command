@@ -76,6 +76,7 @@ cp assets/icon_journal.icns dist/_______.app/Contents/Resources/icon_journal.icn
 cp steam_appid.txt ./OneShot.app/Contents/Resources/steam_appid.txt
 cp patches/mac/oneshot.sh ./OneShot.app/Contents/MacOS/oneshot.sh
 mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
+rm -rf _______.app
 cp -r dist/_______.app _______.app
 rm -f ./OneShot.app/Contents/Info.plist
 rm -f ./_______.app/Contents/Info.plist
