@@ -88,11 +88,9 @@ class AnimationTimer(PipeThread):
 					x, y = last_line.split(',')
 					self.start_animation.emit(int(x), int(y))
 
-							while True:
-								self.next_frame.emit()
-								time.sleep(1.0 / 60)
-						except ValueError:
-							print('Journal received an invalid message: %s' % m)
+					while True:
+						self.next_frame.emit()
+						time.sleep(1.0 / 60)
 					
 				time.sleep(0.05)
 
