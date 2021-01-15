@@ -22,8 +22,9 @@ echo "${white}Compiling ${bold}SyngleChance v${mac_version} ${white}engine for m
 echo "-> ${cyan}Set version number...${color_reset}"
 rm -f OneShot.app/Contents/Info.plist
 rm -f _______.app/Contents/Info.plist
-m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > Info.plist
-m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > JournalInfo.plist
+mkdir -p dist
+m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > ./dist/Info.plist
+m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > ./dist/JournalInfo.plist
 
 # Generate makefile and build main + journal
 if [[ $use_qmake == True ]]
@@ -76,8 +77,8 @@ mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
 cp -r dist/_______.app _______.app
 rm -f ./OneShot.app/Contents/Info.plist
 rm -f ./_______.app/Contents/Info.plist
-cp Info.plist ./OneShot.app/Contents/Info.plist
-cp JournalInfo.plist ./_______.app/Contents/Info.plist
+cp ./dist/Info.plist ./OneShot.app/Contents/Info.plist
+cp ./dist/JournalInfo.plist ./_______.app/Contents/Info.plist
 
 # Compile scripts
 echo "-> ${cyan}Compile xScripts.rxdata...${color_reset}"
