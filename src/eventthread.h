@@ -33,12 +33,13 @@
 #include <SDL_mouse.h>
 #include <SDL_mutex.h>
 
+#include <alc.h>
+
 #include <string>
 
 #include <stdint.h>
 
 struct RGSSThreadData;
-typedef struct ALCdevice_struct ALCdevice;
 struct SDL_Window;
 union SDL_Event;
 
