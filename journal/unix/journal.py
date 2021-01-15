@@ -83,16 +83,10 @@ class AnimationTimer(PipeThread):
 				message = os.read(pipe.fileno(), 256)
 				if len(message) > 0:
 					m = message.decode()
-					spl = m.split(',')
-					if len(spl) == 0:
-						pass
-					else:
-						try:
-							x = int(spl[0])
-							y = int(spl[1])
-							if len(spl) > 2:
-								print('Journal received a possibly invalid message: %s' % m)
-							self.start_animation.emit(x, y)
+					if not ',' in m: pass
+					last_line = m.splitlines()[-1]
+					x, y = last_line.split(',')
+					self.start_animation.emit(int(x), int(y))
 
 							while True:
 								self.next_frame.emit()
