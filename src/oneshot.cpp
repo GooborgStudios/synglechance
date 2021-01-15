@@ -32,6 +32,8 @@
 	#ifdef __APPLE__
 		#define OS_OSX
 		#include <dispatch/dispatch.h>
+
+		#include "macos-bindings.h"
 	#else
 		#define OS_LINUX
 		#include <gtk/gtk.h>
@@ -509,7 +511,7 @@ bool Oneshot::msgbox(int type, const char *body, const char *title)
 
 	// Messagebox data
 	SDL_MessageBoxData data;
-	data.window = NULL; //p->window;
+	data.window = p->window;
 	data.colorScheme = 0;
 	data.title = title;
 	data.message = body;
@@ -565,6 +567,8 @@ bool Oneshot::msgbox(int type, const char *body, const char *title)
 	int button;
 
 	#ifdef OS_OSX
+		macOS::Beep();
+		
 		int *btn = &button;
 
 		// Message boxes and UI changes must be performed from the main thread on macOS Mojave and above.

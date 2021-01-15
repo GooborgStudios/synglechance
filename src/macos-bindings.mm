@@ -1,10 +1,10 @@
 //
-// SyngleChance Engine - mac-desktop.mm
+// SyngleChance Engine - macos-bindings.mm
 // ©2018 Vinyl Darkscratch.  You may use this code for anything you'd like.
 // https://www.queengoob.org
 //
 
-#include "mac-desktop.h"
+#include "macos-bindings.h"
 #include <string>
 
 #import <Foundation/Foundation.h>
@@ -18,7 +18,7 @@ NSDictionary<NSWorkspaceDesktopImageOptionKey, id> *originalOptions;
 NSScreen *screen = [NSScreen mainScreen];
 NSWorkspace *sharedworkspace = [NSWorkspace sharedWorkspace];
 
-void MacDesktop::CacheCurrentBackground() {
+void macOS::CacheCurrentBackground() {
 	if (isCached == NO) {
 		originalBackground = [sharedworkspace desktopImageURLForScreen:screen];
 		originalOptions = [sharedworkspace desktopImageOptionsForScreen:screen];
@@ -26,7 +26,7 @@ void MacDesktop::CacheCurrentBackground() {
 	isCached = YES;
 }
 
-void MacDesktop::ChangeBackground(std::string imageURL, double red, double green, double blue) {
+void macOS::ChangeBackground(std::string imageURL, double red, double green, double blue) {
 	NSURL *URL = [NSURL fileURLWithPath:@(imageURL.c_str())];
 	NSDictionary<NSWorkspaceDesktopImageOptionKey, id> *options = @{NSWorkspaceDesktopImageScalingKey : @3, NSWorkspaceDesktopImageAllowClippingKey : @0, NSWorkspaceDesktopImageFillColorKey : [NSColor colorWithSRGBRed:red green:green blue:blue alpha:1.0]};
 	NSError *error = nil;
@@ -37,7 +37,7 @@ void MacDesktop::ChangeBackground(std::string imageURL, double red, double green
 	}
 }
 
-void MacDesktop::ResetBackground() {
+void macOS::ResetBackground() {
 	NSError *error = nil;
 	if (isCached) {
 		BOOL success = [sharedworkspace setDesktopImageURL:originalBackground forScreen:screen options:originalOptions error:&error];
@@ -45,4 +45,8 @@ void MacDesktop::ResetBackground() {
 			NSLog(@"ERROR DURING DESKTOP BACKGROUND RESET: %@", error);
 		}
 	}
+}
+
+void macOS::Beep() {
+	NSBeep();
 }

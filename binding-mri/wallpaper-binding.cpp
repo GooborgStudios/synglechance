@@ -27,7 +27,7 @@
 	static bool isCached = false;
 #else
 	#ifdef __APPLE__
-		#include "mac-desktop.h"
+		#include "macos-bindings.h"
 		static bool isCached = false;
 	#else
 		#include <gio/gio.h>
@@ -254,10 +254,10 @@ end:
 
 	#ifdef __APPLE__
 		if (!isCached) {
-			MacDesktop::CacheCurrentBackground();
+			macOS::CacheCurrentBackground();
 			isCached = true;
 		}
-		MacDesktop::ChangeBackground(shState->config().gameFolder + path, ((color >> 16) & 0xFF) / 255.0, ((color >> 8) & 0xFF) / 255.0, (color & 0xFF) / 255.0);
+		macOS::ChangeBackground(shState->config().gameFolder + path, ((color >> 16) & 0xFF) / 255.0, ((color >> 8) & 0xFF) / 255.0, (color & 0xFF) / 255.0);
 	#else
 		char gameDir[PATH_MAX];
 		if (getcwd(gameDir, sizeof(gameDir)) == NULL) {
@@ -391,7 +391,7 @@ RB_METHOD(wallpaperReset)
 	}
 #else
 	#ifdef __APPLE__
-		MacDesktop::ResetBackground();
+		macOS::ResetBackground();
 	#else
 		desktopEnvironmentInit();
 		if (desktop == "cinnamon" || desktop == "gnome" || desktop == "mate" || desktop == "deepin") {

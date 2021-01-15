@@ -4,7 +4,7 @@ set -e
 cd `dirname $0`
 
 # User-configurable variables
-mac_version="1.1.1"
+mac_version="1.2.0"
 make_threads=8
 ONESHOT_PATH=$HOME/Library/Application\ Support/Steam/steamapps/common/OneShot
 # Colors
@@ -22,8 +22,9 @@ echo "${white}Compiling ${bold}SyngleChance v${mac_version} ${white}engine for m
 echo "-> ${cyan}Set version number...${color_reset}"
 rm -f OneShot.app/Contents/Info.plist
 rm -f _______.app/Contents/Info.plist
-m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > Info.plist
-m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > JournalInfo.plist
+mkdir -p dist
+m4 patches/mac/Info.plist.in -DONESHOTMACVERSION=$mac_version > ./dist/Info.plist
+m4 patches/mac/JournalInfo.plist.in -DONESHOTMACVERSION=$mac_version > ./dist/JournalInfo.plist
 
 # Generate makefile and build main + journal
 if [[ $use_qmake == True ]]
@@ -70,14 +71,15 @@ cp -f journal/unix/macOS/Python dist/_______.app/Contents/MacOS/Python
 install_name_tool -change @loader_path/libsteam_api.dylib "$( cd "$(dirname "$0")" ; pwd -P )"/steamworks/redistributable_bin/osx32/libsteam_api.dylib ./OneShot.app/Contents/Resources/steamshim
 cmake -P patches/mac/CompleteBundle.cmake
 cp assets/icon.icns ./OneShot.app/Contents/Resources/icon.icns
+cp assets/icon_journal.icns dist/_______.app/Contents/Resources/icon_journal.icns
 cp steam_appid.txt ./OneShot.app/Contents/Resources/steam_appid.txt
 cp patches/mac/oneshot.sh ./OneShot.app/Contents/MacOS/oneshot.sh
 mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
 cp -r dist/_______.app _______.app
 rm -f ./OneShot.app/Contents/Info.plist
 rm -f ./_______.app/Contents/Info.plist
-cp Info.plist ./OneShot.app/Contents/Info.plist
-cp JournalInfo.plist ./_______.app/Contents/Info.plist
+cp ./dist/Info.plist ./OneShot.app/Contents/Info.plist
+cp ./dist/JournalInfo.plist ./_______.app/Contents/Info.plist
 
 # Compile scripts
 echo "-> ${cyan}Compile xScripts.rxdata...${color_reset}"
