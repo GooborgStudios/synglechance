@@ -63,6 +63,7 @@ if [ ! -e $ResourcesDir ]
 	mkdir -p "$ResourcesDir"
 fi
 
+rm -rf ./OneShot.app
 mv ./Release/oneshot.app ./OneShot.app
 
 cp steamshim_parent/steamshim ./OneShot.app/Contents/Resources/steamshim
