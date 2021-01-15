@@ -48,8 +48,8 @@ unix {
 		INCLUDEPATH += $$QMAKE_MAC_SDK_PATH/System/Library/Frameworks/OpenAL.framework/Versions/A/Headers /usr/local/include
 		LIBS += -framework OpenAL -framework AppKit
 		QMAKE_LFLAGS += -L/usr/local/lib -L/usr/local/opt/ruby/lib -L/usr/local/opt/openal-soft/lib
-		HEADERS += src/mac-bindings.h
-		SOURCES += src/mac-bindings.mm
+		HEADERS += src/macos-bindings.h
+		SOURCES += src/macos-bindings.mm
 	}
 	!macx: {
 		CONFIG(debug, debug|release) {
