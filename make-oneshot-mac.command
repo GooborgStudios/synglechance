@@ -71,6 +71,7 @@ cp -f journal/unix/macOS/Python dist/_______.app/Contents/MacOS/Python
 install_name_tool -change @loader_path/libsteam_api.dylib "$( cd "$(dirname "$0")" ; pwd -P )"/steamworks/redistributable_bin/osx32/libsteam_api.dylib ./OneShot.app/Contents/Resources/steamshim
 cmake -P patches/mac/CompleteBundle.cmake
 cp assets/icon.icns ./OneShot.app/Contents/Resources/icon.icns
+cp assets/icon_journal.icns dist/_______.app/Contents/Resources/icon_journal.icns
 cp steam_appid.txt ./OneShot.app/Contents/Resources/steam_appid.txt
 cp patches/mac/oneshot.sh ./OneShot.app/Contents/MacOS/oneshot.sh
 mv OneShot.app/Contents/MacOS/OneShot OneShot.app/Contents/Resources/OneShot
