@@ -33,7 +33,7 @@ if [[ $use_qmake == True ]]
 	qmake MRIVERSION=2.5 -spec macx-xcode
 	echo "-> ${cyan}Compile engine...${color_reset}"
 	xcodebuild
-	echo "-> ${cyan}Compile steamshim...${color_reset}"
+	# echo "-> ${cyan}Compile steamshim...${color_reset}"
 	# cd steamshim_parent
 	# mkdir build && cd build
 	# cmake ..
