@@ -12,4 +12,5 @@ namespace macOS {
 	void CacheCurrentBackground();
 	void ChangeBackground(std::string imageURL, double red, double green, double blue);
 	void ResetBackground();
+    void Beep();
 }
